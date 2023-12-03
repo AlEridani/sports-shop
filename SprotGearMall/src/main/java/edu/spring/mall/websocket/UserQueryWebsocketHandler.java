@@ -72,6 +72,7 @@ public class UserQueryWebsocketHandler extends TextWebSocketHandler {
 		WebSocketSession targetSession = (session.equals(room.getUserSession())) ? room.getAdminSession() : room.getUserSession();
 		if (targetSession != null && targetSession.isOpen()) {
 			logger.info("targetSession" + targetSession.toString());
+			logger.info("message : " + message.getPayload());
 			targetSession.sendMessage(message);
 		}
 

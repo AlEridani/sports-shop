@@ -29,72 +29,73 @@
 </style>
 
     <script type="text/javascript">
-    $(()=>{
-   		$('#send').click(() => {
-        	sendMessage();
-        	
-        $('#message').val('');
-    	});//end send.click
-    	
-    	$('#endChatBtn').click(()=>{
-    		ws.close();
-    	})//end endChatBtn.click
-    	var roomId = $('#roomId').val();
-    	onWebsocket(roomId);
-   	 console.log('roomId', roomId );
+        var ws; // 전역 웹소켓 변수
 
+        $(() => {
+            // 메시지 전송 이벤트
+            $('#send').click(() => {
+                sendMessage();
+                $('#message').val('');
+            });
+
+            // 채팅 종료 이벤트
+            $('#endChatBtn').click(() => {
+                if (ws) {
+                    ws.close(); // 웹소켓 연결 종료
+                }
+                $('#log').append("채팅이 종료되었습니다.<br/>");
+            });
+
+            // roomId 값에 따라 웹소켓 연결
+            var roomId = $('#roomId').val();
+            onWebsocket(roomId);
+            console.log('roomId', roomId);
+        });
+
+        // 웹소켓 초기화 및 이벤트 핸들러 설정
+        function onWebsocket(roomId) {
+            var wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+            var wsUrl = wsProtocol + "//" + window.location.host + "/mall/echo";
+
+            if (roomId) {
+                wsUrl += "?roomId=" + encodeURIComponent(roomId);
+            }
+
+            ws = new WebSocket(wsUrl);
+            console.log('wsUrl', wsUrl);
+
+            ws.onmessage = onMessage;
+            ws.onclose = onClose;
+            ws.onopen = function(event) {
+                console.log("웹소켓 연결 성공");
+            };
+            ws.onerror = function(event) {
+                console.error("웹소켓 에러 발생", event);
+            };
+        }
+
+        // 메시지 전송 함수
+        function sendMessage() {
+            var message = $('#message').val();
+            if (message) {
+                ws.send(message);
+                $('#log').append("나: " + message + "<br/>");
+                console.log("Sent: " + message);
+            }
+        }
+
+        // 메시지 수신 함수
         function onMessage(msg) {
             var data = msg.data;
-            var log = $('#log');
-            log.append(data + "<br/>");
-            log.scrollTop(log.prop("scrollHeight"));
+            $('#log').append(data + "<br/>");
             console.log("Received: " + data);
         }
 
-        $('#endChatBtn').click(() => {
-            if (ws) {
-                ws.close(); // 웹소켓 연결 종료
-            }
+        // 웹소켓 연결 종료 함수
+        function onClose() {
+            console.log("웹소켓 연결 끊김");
             $('#log').append("채팅이 종료되었습니다.<br/>");
-            // 필요한 경우 추가적인 UI 업데이트
-        });
-    })//end document
-
-
-
-    function sendMessage() {
-        var message = $('#message').val();
-        if (message) {
-            ws.send(message);
-            $('#log').append("나: " + message + "<br/>"); // 메시지를 로그에 추가
-            $('#message').val(''); // 입력 필드 초기화
-            console.log("Sent: " + message);
         }
-    }
-
-    function onMessage(msg) {
-        var data = msg.data;
-        $('#log').append(data + "<br/>");
-        console.log("Received: " + data);
-    }
-
-    function onClose() {
-        console.log("웹소켓 연결 끊김");
-        $('#log').append("채팅이 종료되었습니다" + "<br/>");
-
-    }
-
-    function onWebsocket(roomId) {
-        var wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        var wsUrl = wsProtocol + "//" + window.location.host + "/mall/echo";
-
-        if (roomId) {
-            wsUrl += "?roomId=" + encodeURIComponent(roomId);
-        }
-
-        ws = new WebSocket(wsUrl); // 전역 변수에 할당
-        console.log('wsUrl', wsUrl);
-    }
     </script>
 </head>
 <body>
