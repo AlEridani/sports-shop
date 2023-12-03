@@ -79,7 +79,7 @@
         rooms.forEach(function(room) {
             var roomDate = getRoomDateTime(room.roomId);
             var timeAgo = timeSince(roomDate);
-            var chatRoomUrl = '/mall/qnaBoard/chat/' + encodeURIComponent(room.roomId);
+            var chatRoomUrl = '/mall/qnaBoard/chat?roomId=' + encodeURIComponent(room.roomId);
 
             var roomElement = $('<a href="javascript:void(0)" class="list-group-item"></a>');
             roomElement.append('채팅방 번호 : ' + room.roomId + ' - ' + timeAgo + '<br>');
@@ -87,7 +87,8 @@
 
             // 클릭 이벤트 리스너 추가
             roomElement.click(function(e) {
-                e.preventDefault(); 
+                e.preventDefault();
+                console.log('url', chatRoomUrl);
                 window.open(chatRoomUrl, '_blank', 'width=500,height=650'); 
             });
 

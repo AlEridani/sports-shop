@@ -7,11 +7,11 @@ import org.springframework.messaging.Message;
 import org.springframework.web.socket.WebSocketSession;
 
 public class ChatRoom {
-	 private String roomId;
-	 private WebSocketSession userSession;
-	 private WebSocketSession adminSession;
-	 private List<Message> messages;
-	 private Date createdDate;
+		private String roomId;
+		private WebSocketSession userSession;
+		private WebSocketSession adminSession;
+		private List<Message> messages;
+		private Date createdDate;
 	public String getRoomId() {
 		return roomId;
 	}
@@ -38,6 +38,9 @@ public class ChatRoom {
 	}
 	public Date getCreatedDate() {
 		return createdDate;
+	}
+	public void addMessage(Message message) {
+		this.messages.add(message);
 	}
 	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;

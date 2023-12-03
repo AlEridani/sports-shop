@@ -12,15 +12,15 @@ public class WebsocketConfig implements WebSocketConfigurer{
 
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(userQueryWebSocketHandler(), "/echo/{roomId}")
-        .addHandler(userQueryWebSocketHandler(), "/echo")
+        registry.addHandler(userQueryWebSocketHandler(), "/echo")
         .setAllowedOrigins("*")
         .addInterceptors(new SecurityHandshakeInterceptor());
 	}
-	
+
 	@Bean
 	public UserQueryWebsocketHandler userQueryWebSocketHandler() {
 	      return new UserQueryWebsocketHandler();
 	    }
+
 
 }

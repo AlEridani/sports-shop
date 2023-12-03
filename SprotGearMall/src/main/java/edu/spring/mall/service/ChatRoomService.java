@@ -10,8 +10,12 @@ import edu.spring.mall.websocket.ChatRoom;
 public interface ChatRoomService {
 	ChatRoom create(String roomId, WebSocketSession userSession);
 	Collection<ChatRoomVO> getAllChatList();
-	void joinRooom(String roomId, WebSocketSession adminSession);
+	void joinRoom(String roomId, WebSocketSession adminSession);
 	ChatRoom getChatRoom(String roomId);
-	
+
+	ChatRoom getChatRoom(WebSocketSession session);
+
+	void  removeChatRoom(String roomId , WebSocketSession session);
+
 }
 

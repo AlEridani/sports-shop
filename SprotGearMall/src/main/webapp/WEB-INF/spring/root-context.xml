@@ -20,9 +20,9 @@ http://www.springframework.org/schema/tx/spring-tx.xsd">
 	<bean id="ds" class="oracle.jdbc.pool.OracleDataSource">
 		<property name="dataSourceName" value="ds"></property>
 		<property name="URL"
-			value="jdbc:oracle:thin:@172.16.3.11:1521:xe"></property>
-		<property name="user" value="scott"></property>
-		<property name="password" value="tiger"></property>
+			value="jdbc:oracle:thin:@192.168.45.241:1521:xe"></property>
+		<property name="user" value="side2"></property>
+		<property name="password" value="123"></property>
 	</bean>
 
 	<bean id="transactionManager"

@@ -14,10 +14,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.spring.mall.domain.QnaBoardVO;
@@ -69,7 +66,7 @@ public class BoardController {
 		pageMaker.setPageData();
 		model.addAttribute("pageMaker", pageMaker);
 		model.addAttribute("memberId", memberId);	
-	}
+	}//end qnaBoardGET()
 	
 	@GetMapping("/qnaDetail")
 	public void detail(Model model, Integer qnaBoardId, Integer page, String memberId) {
@@ -99,7 +96,7 @@ public class BoardController {
 		} else {
 			return "redirect:/qnaBoard/qnaRegister";
 		}
-	}
+	}//end registerPOST()
 	
 	@GetMapping("/qnaUpdate")
 	public void updateGET(Model model, Integer qnaBoardId, Integer page) {
@@ -119,7 +116,7 @@ public class BoardController {
 		}else {
 			return "redirect:/qnaBoard/qnaUpdate?qnaBoardId=" + vo.getQnaBoardId();
 		}
-	}
+	}//end updatePOST()
 	
 	@PostMapping(value="/delete", produces = "application/json")
 	public String delete(Integer qnaBoardId) {
@@ -130,22 +127,17 @@ public class BoardController {
 		} else {
 			return "redirect:/qnaBoard/qnaBoard";
 		}
-	}
+	}//end delete()
 	
 	@GetMapping("/chat")
-	public void chatGET() {
+	public void chatGET(@RequestParam (required = false) String roomId, Model model) {
+		if(roomId != null) {
+			ChatRoom room =chatService.getChatRoom(roomId);
+			model.addAttribute("roomId", roomId);
+			logger.info("room 확인 : " + roomId);
+		}
 		logger.info("chatGet 호출");
-	}
-	
-	@GetMapping("/chat/{roomId}")
-	public String  chatRoomGET(@PathVariable String roomId, Model model) {
-	    logger.info("chatRoomGET roomId : "+ roomId + " 호출");
-	    ChatRoom room =chatService.getChatRoom(roomId);
-	    model.addAttribute("roomId", roomId);
-	    logger.info("room 확인 : " + room);
-	    
-		return "qnaBoard/chat";
-	}
+	}//end chatGET()
 	
 	
 }

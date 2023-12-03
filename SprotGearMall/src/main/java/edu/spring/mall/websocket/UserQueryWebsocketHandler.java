@@ -23,9 +23,7 @@ import edu.spring.mall.service.ChatRoomService;
 
 public class UserQueryWebsocketHandler extends TextWebSocketHandler {
 	private final Logger logger = LoggerFactory.getLogger(UserQueryWebsocketHandler.class);
-	private List<WebSocketSession> sessionList = new ArrayList<WebSocketSession>();
-	private Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
-	
+
 	@Autowired
 	private ChatRoomService service;
 
@@ -39,54 +37,71 @@ public class UserQueryWebsocketHandler extends TextWebSocketHandler {
             Authentication auth = securityContext.getAuthentication();
             boolean isAdmin = auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            if(isAdmin) {
-            	logger.info("관리자 접속");
-            	 URI uri = session.getUri();
-            	    if (uri != null) {
-            	        String path = uri.getPath();
-            	        String roomId = extractRoomIdFromPath(path);
-            	        logger.info("roomId : " + roomId);
-            }
-            }
-            String username = auth.getName();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-            String dateTime = dateFormat.format(new Date());
-            String roomId = dateTime + "-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
-            session.getAttributes().put("username", username);
-            service.create(roomId, session);
-            logger.info("채팅번호 : " + roomId + " || id : " + username + " 접속");
-        }
-	}
+			String username = auth.getName();
+
+			if(isAdmin) {
+				String roomId = extractRoomIdFromSession(session);
+            	logger.info("관리자 접속 : " + username + " || 채팅방 번호 : " + roomId);
+				session.getAttributes().put("username", username);
+				service.joinRoom(roomId, session);
+			}else{
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+				String dateTime = dateFormat.format(new Date());
+				String roomId = dateTime + "-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+				session.getAttributes().put("username", username);
+				service.create(roomId, session);
+				logger.info("채팅번호 : " + roomId + " || id : " + username + " 접속");
+				}
+            }//end if
+
+        }//end afterConnectionEstablished()
+
 	
 	//메세지 전송시
 	@Override
 	protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 		String username = (String) session.getAttributes().get("username");
-		logger.info(username + " : " + message.getPayload());
-		// message.getPayload()이게 전송받은 메세지임
-	
-	
-	}
+		ChatRoom room = service.getChatRoom(session);
+		if (room == null) {
+			logger.error("채팅방을 찾을 수 없음");
+			return;
+		}
+		logger.info("room : " + room.toString());
+
+		// 현재 세션과 반대되는 세션(사용자 또는 관리자)에게 메시지 전송
+		WebSocketSession targetSession = (session.equals(room.getUserSession())) ? room.getAdminSession() : room.getUserSession();
+		if (targetSession != null && targetSession.isOpen()) {
+			logger.info("targetSession" + targetSession.toString());
+			targetSession.sendMessage(message);
+		}
+
+
+	}//end handleTextMessage()
 	
 	//웹소켓 종료
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 		String username = (String) session.getAttributes().get("username");
 		logger.info("id : " + username + "의 연결 종료");
-        sessionList.remove(session);
+        service.removeChatRoom(extractRoomIdFromSession(session), session);
 
 	}
-	
-	private String extractRoomIdFromPath(String path) {
-	    // 경로를 "/" 기준으로 분할
-	    String[] pathSegments = path.split("/");
 
-	    // 마지막 세그먼트가 roomId임을 가정
-	    if (pathSegments.length > 0) {
-	        return pathSegments[pathSegments.length - 1];
-	    }
-
-	    return null; 
+	private String extractRoomIdFromSession(WebSocketSession session) {
+		URI uri = session.getUri();
+		if (uri != null) {
+			String query = uri.getQuery();
+			if (query != null) {
+				String[] params = query.split("&");
+				for (String param : params) {
+					String[] keyValue = param.split("=");
+					if ("roomId".equals(keyValue[0]) && keyValue.length > 1) {
+						return keyValue[1];
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 

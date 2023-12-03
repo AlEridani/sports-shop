@@ -30,6 +30,7 @@ public class ChatRoomServiceImple implements ChatRoomService {
 		logger.info("채팅방 생성");
 		ChatRoom room = new ChatRoom(roomId, userSession, null, new ArrayList<>(), new Date());
 		chatList.put(roomId, room);
+		chatMapping.put(userSession, room);
 		return room;
 	}
 	
@@ -48,15 +49,32 @@ public class ChatRoomServiceImple implements ChatRoomService {
 	}
 
 	@Override
-	public void joinRooom(String roomId, WebSocketSession adminSession) {
-		logger.info("채팅방 입장");
-		 
+	public void joinRoom(String roomId, WebSocketSession adminSession) {
+		logger.info("채팅방 입장: roomId=" + roomId);
+	    ChatRoom room = chatList.get(roomId);
+		if(room == null) {
+			logger.info("채팅방이 없음");
+			return;
+		}
+	    room.setAdminSession(adminSession);
+	    chatMapping.put(adminSession, room);
 	}
 
 	@Override
 	public ChatRoom getChatRoom(String roomId) {
 		logger.info("getChatRoom 호출");
 	    return chatList.get(roomId);
+	}
+
+	public ChatRoom getChatRoom(WebSocketSession session) {
+		logger.info("getChatRoom 호출");
+	    return chatMapping.get(session);
+	}
+
+	public void removeChatRoom(String roomId, WebSocketSession session) {
+		logger.info("removeChatRoom 호출");
+		chatList.remove(roomId);
+		chatMapping.remove(session);
 	}
 
 }
